@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leftover Yarn Pattern Finder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Manrope:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero">
+        <p class="eyebrow">Leftover Yarn App</p>
+        <h1>Find Free Patterns That Fit What You Have</h1>
+        <p>
+          Enter your leftover amount, yarn type, and yarn weight. The app scores matches from
+          <a href="https://www.woolandthegang.com/en/free-patterns" target="_blank" rel="noreferrer">Wool and the Gang free patterns</a>.
+        </p>
+      </section>
+
+      <section class="panel">
+        <form id="filter-form" class="form-grid">
+          <label>
+            Amount left over
+            <div class="input-row">
+              <input id="amount" name="amount" type="number" min="0" step="1" placeholder="e.g. 250" required />
+              <select id="amount-unit" name="amountUnit" aria-label="Amount unit">
+                <option value="g">grams</option>
+                <option value="m">meters</option>
+              </select>
+            </div>
+          </label>
+
+          <label>
+            Yarn type
+            <input id="yarn-type" name="yarnType" list="yarn-types" placeholder="e.g. wool, cotton, alpaca" required />
+            <datalist id="yarn-types"></datalist>
+          </label>
+
+          <label>
+            Yarn weight
+            <select id="yarn-weight" name="yarnWeight" required>
+              <option value="">Select weight</option>
+              <option value="lace">Lace</option>
+              <option value="fingering">Fingering</option>
+              <option value="sport">Sport</option>
+              <option value="dk">DK</option>
+              <option value="worsted">Worsted</option>
+              <option value="aran">Aran</option>
+              <option value="bulky">Bulky</option>
+              <option value="super bulky">Super Bulky</option>
+            </select>
+          </label>
+
+          <div class="actions">
+            <button type="submit">Find Patterns</button>
+            <button type="button" id="refresh-btn" class="secondary">Refresh Live Catalog</button>
+          </div>
+        </form>
+
+        <p id="status" class="status" aria-live="polite"></p>
+      </section>
+
+      <section>
+        <div class="results-head">
+          <h2>Matches</h2>
+          <span id="result-count"></span>
+        </div>
+        <div id="results" class="results"></div>
+      </section>
+    </main>
+
+    <template id="result-card-template">
+      <article class="card">
+        <div>
+          <h3 class="card-title"></h3>
+          <p class="confidence"></p>
+        </div>
+        <ul class="meta"></ul>
+        <p class="notes"></p>
+        <a class="pattern-link" target="_blank" rel="noreferrer">Open pattern</a>
+      </article>
+    </template>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
