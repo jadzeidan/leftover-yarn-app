@@ -26,6 +26,7 @@ Open [http://localhost:8080](http://localhost:8080)
 
 ## Notes
 
+- The app only shows links discovered from the Wool and the Gang free-patterns source.
 - Wool and the Gang pages are JS-heavy, so live parsing can be partial.
-- If live fetch cannot parse enough details, the app uses `data/patterns.json`.
-- You can improve matching quality by expanding `data/patterns.json` with verified yarn requirement info.
+- Results are strictly filtered to patterns with known yarn requirements less than or equal to your entered amount.
+- `data/patterns.json` is intentionally empty by default to avoid guessed links.

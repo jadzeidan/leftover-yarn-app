@@ -102,7 +102,7 @@ async function loadLivePatterns() {
           url: link.url,
           yarnType: "unknown",
           yarnWeight: "unknown",
-          amountMin: 0,
+          amountMin: null,
           amountUnit: "g",
           notes: "Could not parse yarn details from live page.",
           confidence: "low",
@@ -140,11 +140,34 @@ function parsePatternLinks(text) {
 
   while (match) {
     const title = sanitizeTitle(match[1]);
-    links.push({ title, url: match[2] });
+    const url = normalizePatternUrl(match[2]);
+    if (url) {
+      links.push({ title, url });
+    }
     match = regex.exec(text);
   }
 
   return dedupeByUrl(links);
+}
+
+function normalizePatternUrl(rawUrl) {
+  try {
+    const parsed = new URL(rawUrl);
+    if (parsed.host !== "www.woolandthegang.com") {
+      return "";
+    }
+    if (!parsed.pathname.startsWith("/en/products/")) {
+      return "";
+    }
+    if (!parsed.pathname.toLowerCase().includes("pattern")) {
+      return "";
+    }
+    parsed.search = "";
+    parsed.hash = "";
+    return parsed.toString();
+  } catch {
+    return "";
+  }
 }
 
 function parsePatternDetail(text, base) {
@@ -166,7 +189,7 @@ function parsePatternDetail(text, base) {
     url: base.url,
     yarnType,
     yarnWeight,
-    amountMin: amountMatch ? Number.parseInt(amountMatch[1], 10) : 0,
+    amountMin: amountMatch ? Number.parseInt(amountMatch[1], 10) : null,
     amountUnit: amountMatch?.[2].toLowerCase().startsWith("m") ? "m" : "g",
     notes: amountMatch
       ? "Live details parsed from pattern page text."
@@ -191,6 +214,7 @@ function runMatch() {
   const yarnWeight = normalize(els.yarnWeight.value);
 
   const scored = state.patterns
+    .filter((pattern) => hasEnoughYarn(pattern, { amount, amountUnit }))
     .map((pattern) => ({
       pattern,
       score: scorePattern(pattern, { amount, amountUnit, yarnType, yarnWeight }),
@@ -222,18 +246,18 @@ function scorePattern(pattern, input) {
   if (Number.isFinite(converted)) {
     if (input.amount >= converted) {
       score += 25;
-    } else if (input.amount >= converted * 0.8) {
-      score += 8;
     }
-  } else {
-    score += 4;
   }
 
   return score;
 }
 
 function convertAmount(value, fromUnit, toUnit) {
-  if (!value || fromUnit === toUnit) {
+  if (!Number.isFinite(value) || value <= 0) {
+    return Number.NaN;
+  }
+
+  if (fromUnit === toUnit) {
     return value;
   }
 
@@ -247,13 +271,19 @@ function convertAmount(value, fromUnit, toUnit) {
   return Number.NaN;
 }
 
+function hasEnoughYarn(pattern, input) {
+  const requiredAmount = convertAmount(pattern.amountMin, pattern.amountUnit, input.amountUnit);
+  return Number.isFinite(requiredAmount) && requiredAmount <= input.amount;
+}
+
 function renderResults(patterns) {
   els.results.replaceChildren();
   els.resultCount.textContent = `${patterns.length} shown`;
 
   if (!patterns.length) {
     const empty = document.createElement("p");
-    empty.textContent = "No strong matches. Try a broader yarn type (e.g. wool) or a neighboring yarn weight.";
+    empty.textContent =
+      "No matches with known yarn requirements at or below your amount. Try refreshing live catalog or adjusting filters.";
     els.results.append(empty);
     return;
   }
